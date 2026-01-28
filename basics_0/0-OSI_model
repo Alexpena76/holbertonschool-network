@@ -1,5 +1,3 @@
-2 - The OSI model is a conceptual model that characterizes the communication functions of a telecommunication system without regard to their underlying internal structure and technology
-Why? As the text states, "OSI model is a concept, it's not even tangible" and "It is a conceptual framework so we can better understand complex interactions." It doesn't care about the specific hardware or technology being used - it's abstract.
+2
 
-2 - From the lowest to the highest level
-Why? The text explicitly says: "It is organized from the lowest level to the highest level" - from Layer 1 (physical signals) up to Layer 7 (application protocols like HTTP).
+2
