@@ -1,0 +1,275 @@
+What Happens When You Type https://www.google.com and Press Enter?
+
+The Complete Flow
+
+┌──────────┐    ┌──────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│  Browser │───►│ DNS  │───►│ Firewall │───►│   Load   │───►│   Web    │
+│          │    │      │    │          │    │ Balancer │    │  Server  │
+└──────────┘    └──────┘    └──────────┘    └──────────┘    └────┬─────┘
+                                                                  │
+                                                                  ▼
+                                                            ┌──────────┐
+                                                            │   App    │
+                                                            │  Server  │
+                                                            └────┬─────┘
+                                                                  │
+                                                                  ▼
+                                                            ┌──────────┐
+                                                            │ Database │
+                                                            └──────────┘
+
+1. DNS Request: Translating the Name to an Address
+The moment you press Enter, your browser needs to find out where www.google.com actually lives on the internet. Computers don't understand domain names—they only understand IP addresses.
+
+The DNS lookup process:
+
+Your Browser
+     │
+     │ "Where is www.google.com?"
+     ▼
+┌─────────────────┐
+│  Browser Cache  │ ──► Found? Return IP immediately
+└────────┬────────┘
+         │ Not found
+         ▼
+┌─────────────────┐
+│    OS Cache     │ ──► Found? Return IP immediately
+└────────┬────────┘
+         │ Not found
+         ▼
+┌─────────────────┐
+│  Router Cache   │ ──► Found? Return IP immediately
+└────────┬────────┘
+         │ Not found
+         ▼
+┌─────────────────┐
+│   ISP's DNS     │ ──► Queries root servers, TLD servers,
+│     Server      │     and authoritative name servers
+└────────┬────────┘
+         │
+         ▼
+    IP: 142.250.80.46
+
+Your browser now knows that www.google.com lives at IP address 142.250.80.46.
+
+2. TCP/IP: Establishing the Connection
+With the IP address in hand, your browser needs to establish a reliable connection. This happens through the TCP/IP protocol suite.
+
+The TCP Three-Way Handshake:
+
+Your Computer                              Google's Server
+     │                                           │
+     │─────────── SYN (seq=100) ────────────────►│
+     │           "Hey, can we talk?"             │
+     │                                           │
+     │◄──────── SYN-ACK (seq=300, ack=101) ──────│
+     │        "Sure! I'm ready too."             │
+     │                                           │
+     │─────────── ACK (ack=301) ────────────────►│
+     │           "Great, let's go!"              │
+     │                                           │
+     │◄═══════════ CONNECTION ESTABLISHED ═══════│
+
+What TCP/IP provides:
+
+IP (Internet Protocol): Routes packets across the internet to the correct destination
+TCP (Transmission Control Protocol): Ensures reliable, ordered delivery of data
+
+3. Firewall: The Security Checkpoint
+Before your request reaches Google's servers, it must pass through firewalls—both on your end and on Google's end.
+
+┌─────────────────────────────────────────────────────────┐
+│                      FIREWALL                           │
+│                                                         │
+│  ALLOWED:                    BLOCKED:                   │
+│  ✅ HTTPS (port 443)         ❌ Suspicious patterns     │
+│  ✅ HTTP (port 80)           ❌ Known malicious IPs     │
+│  ✅ Legitimate traffic       ❌ DDoS attempts           │
+│                              ❌ SQL injection attempts  │
+└─────────────────────────────────────────────────────────┘
+
+Firewalls check:
+
+Is this traffic coming from a legitimate source?
+Is it using an allowed port and protocol?
+Does it match any known attack patterns?
+Is it within rate limits?
+
+
+4. HTTPS/SSL: Encrypting the Communication
+Since you typed https://, your browser initiates a secure connection using SSL/TLS encryption. This happens through the SSL Handshake.
+
+The SSL/TLS Handshake:
+
+Your Browser                              Google's Server
+     │                                           │
+     │────── CLIENT HELLO ──────────────────────►│
+     │       (supported encryption methods)      │
+     │                                           │
+     │◄───── SERVER HELLO + CERTIFICATE ─────────│
+     │       (chosen method + public key)        │
+     │                                           │
+     │   [Browser verifies certificate           │
+     │    with Certificate Authority]            │
+     │                                           │
+     │────── KEY EXCHANGE ──────────────────────►│
+     │       (encrypted with public key)         │
+     │                                           │
+     │◄═══════ SECURE CONNECTION ════════════════│
+     │                                           │
+     │  🔒 All traffic now encrypted 🔒          │
+
+What HTTPS provides:
+
+Encryption: Data is unreadable to anyone intercepting it
+Authentication: Proves you're talking to the real Google, not an imposter
+Data Integrity: Ensures data isn't modified in transit
+
+
+5. Load Balancer: Distributing the Traffic
+Google handles billions of requests daily. A single server couldn't possibly handle all that traffic. Enter the load balancer.
+
+┌─────────────────┐
+                    │  LOAD BALANCER  │
+                    │                 │
+Your Request ──────►│  Algorithm:     │
+                    │  Round Robin    │
+                    │                 │
+                    └────────┬────────┘
+                             │
+           ┌─────────────────┼─────────────────┐
+           │                 │                 │
+           ▼                 ▼                 ▼
+    ┌──────────┐      ┌──────────┐      ┌──────────┐
+    │ Server 1 │      │ Server 2 │      │ Server 3 │
+    │   25%    │      │   25%    │      │   25%    │
+    └──────────┘      └──────────┘      └──────────┘
+                             │
+                             ▼
+                      ┌──────────┐
+                      │ Server 4 │
+                      │   25%    │
+                      └──────────┘
+
+Load balancer responsibilities:
+
+Distributes incoming requests across multiple servers
+Monitors server health and removes unhealthy servers
+Provides redundancy—if one server fails, others take over
+Can terminate SSL and handle HTTPS encryption
+
+
+6. Web Server: Handling the HTTP Request
+Your request now reaches one of Google's web servers (likely Nginx or Google's custom GWS - Google Web Server).
+
+┌─────────────────────────────────────────┐
+│             WEB SERVER                  │
+│                                         │
+│  Receives: GET / HTTP/1.1               │
+│            Host: www.google.com         │
+│                                         │
+│  Responsibilities:                      │
+│  ✅ Handle HTTP/HTTPS requests          │
+│  ✅ Serve static files (HTML, CSS, JS)  │
+│  ✅ Route requests to application server│
+│  ✅ Compress responses (gzip)           │
+│  ✅ Cache frequently requested content  │
+│                                         │
+└────────────────────┬────────────────────┘
+                     │
+                     │ Dynamic request
+                     ▼
+              Application Server
+
+For a simple Google homepage request, the web server might serve cached static content directly. For a search query, it forwards to the application server.
+
+7. Application Server: Processing the Logic
+The application server is where the magic happens. It runs Google's code and processes your request.
+
+┌─────────────────────────────────────────┐
+│          APPLICATION SERVER             │
+│                                         │
+│  For a search query like "cute cats":   │
+│                                         │
+│  1. Parse the search query              │
+│  2. Apply search algorithms             │
+│  3. Rank results by relevance           │
+│  4. Personalize based on user data      │
+│  5. Apply spam filters                  │
+│  6. Format results for display          │
+│  7. Generate HTML response              │
+│                                         │
+│  Technologies:                          │
+│  - Business logic                       │
+│  - APIs                                 │
+│  - Session management                   │
+│  - Authentication                       │
+│                                         │
+└────────────────────┬────────────────────┘
+                     │
+                     │ Query data
+                     ▼
+                  Database
+
+8. Database: Retrieving the Data
+Finally, the application server queries databases to retrieve the information you need.
+
+┌─────────────────────────────────────────┐
+│              DATABASE                   │
+│                                         │
+│  Google's databases contain:            │
+│                                         │
+│  📄 Indexed web pages (billions!)       │
+│  👤 User preferences and history        │
+│  🔍 Search rankings and algorithms      │
+│  📊 Analytics and metrics               │
+│                                         │
+│  Database types used:                   │
+│  - Bigtable (Google's custom DB)        │
+│  - Spanner (distributed SQL)            │
+│  - Various caching layers               │
+│                                         │
+└─────────────────────────────────────────┘
+
+The Response Journey
+Now everything happens in reverse:
+
+Database
+    │ Returns data
+    ▼
+Application Server
+    │ Generates HTML
+    ▼
+Web Server
+    │ Compresses response
+    ▼
+Load Balancer
+    │ Routes back to you
+    ▼
+Firewall
+    │ Allows response
+    ▼
+Your Browser
+    │ Decrypts (SSL)
+    │ Parses HTML
+    │ Requests CSS, JS, images
+    │ Renders the page
+    ▼
+┌─────────────────────┐
+│   Google Homepage   │
+│                     │
+│      Google         │
+│   [___________]     │
+│   [Search] [Lucky]  │
+│                     │
+└─────────────────────┘
+
+Complete Timeline
+All of this happens in milliseconds:
+DNS Lookup: ~20-120ms
+TCP Connection: ~20-50ms
+SSL Handshake: ~50-150ms
+Request to Server: ~10-50ms
+Server Processing: ~50-200ms
+Response Transfer: ~20-100ms
+Browser Rendering: ~50-200ms
