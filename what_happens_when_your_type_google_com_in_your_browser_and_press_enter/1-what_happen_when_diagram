@@ -1,0 +1,99 @@
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                        INTERNET                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+     ┌──────────────┐
+     │    USER      │
+     │   BROWSER    │
+     │              │
+     │ Types:       │
+     │ https://www. │
+     │ google.com   │
+     └──────┬───────┘
+            │
+            │ ① DNS REQUEST
+            │ "What is the IP for www.google.com?"
+            ▼
+     ┌──────────────┐
+     │     DNS      │
+     │    SERVER    │
+     │              │
+     │ Returns:     │
+     │ 142.250.80.46│
+     └──────┬───────┘
+            │
+            │ ② TCP/IP CONNECTION
+            │ Three-way handshake to IP 142.250.80.46:443
+            │
+            │ ③ HTTPS/SSL HANDSHAKE
+            │ 🔒 Traffic is now ENCRYPTED
+            ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                              GOOGLE'S INFRASTRUCTURE                                     │
+│                                                                                          │
+│    ┌──────────────┐                                                                     │
+│    │   FIREWALL   │◄──── ④ FIREWALL CHECK                                               │
+│    │              │      - Validates source IP                                          │
+│    │ ✅ Port 443  │      - Checks for malicious patterns                                │
+│    │ ✅ HTTPS     │      - Allows legitimate HTTPS traffic                              │
+│    │ ❌ Attacks   │                                                                     │
+│    └──────┬───────┘                                                                     │
+│           │                                                                              │
+│           │ ⑤ LOAD BALANCER                                                             │
+│           ▼                                                                              │
+│    ┌──────────────┐                                                                     │
+│    │    LOAD      │      Distributes traffic using Round Robin                          │
+│    │   BALANCER   │      across multiple servers                                        │
+│    │   (HAproxy)  │                                                                     │
+│    └──────┬───────┘                                                                     │
+│           │                                                                              │
+│           ├────────────────┬────────────────┐                                           │
+│           │                │                │                                            │
+│           ▼                ▼                ▼                                            │
+│    ┌────────────┐   ┌────────────┐   ┌────────────┐                                     │
+│    │  Server 1  │   │  Server 2  │   │  Server 3  │                                     │
+│    └────────────┘   └─────┬──────┘   └────────────┘                                     │
+│                           │                                                              │
+│                           │ ⑥ WEB SERVER (Nginx)                                        │
+│                           ▼                                                              │
+│                    ┌──────────────┐                                                     │
+│                    │  WEB SERVER  │   - Receives HTTPS request on port 443              │
+│                    │    (Nginx)   │   - Handles static files (CSS, JS, images)          │
+│                    │              │   - Routes dynamic requests to App Server           │
+│                    │  Port: 443   │                                                     │
+│                    └──────┬───────┘                                                     │
+│                           │                                                              │
+│                           │ ⑦ APPLICATION SERVER                                        │
+│                           ▼                                                              │
+│                    ┌──────────────┐                                                     │
+│                    │ APPLICATION  │   - Processes search query                          │
+│                    │    SERVER    │   - Runs ranking algorithms                         │
+│                    │              │   - Applies personalization                         │
+│                    │ (Python/Java)│   - Generates dynamic HTML                          │
+│                    └──────┬───────┘                                                     │
+│                           │                                                              │
+│                           │ ⑧ DATABASE QUERY                                            │
+│                           ▼                                                              │
+│                    ┌──────────────┐                                                     │
+│                    │   DATABASE   │   - Stores indexed web pages                        │
+│                    │   (MySQL/    │   - Retrieves search results                        │
+│                    │   Bigtable)  │   - Returns data to App Server                      │
+│                    │              │                                                     │
+│                    └──────┬───────┘                                                     │
+│                           │                                                              │
+└───────────────────────────┼──────────────────────────────────────────────────────────────┘
+                            │
+                            │ ⑨ RESPONSE (Encrypted HTML)
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │    USER      │
+                     │   BROWSER    │
+                     │              │
+                     │  Renders:    │
+                     │  ┌────────┐  │
+                     │  │ Google │  │
+                     │  │[______]│  │
+                     │  │[Search]│  │
+                     │  └────────┘  │
+                     └──────────────┘
